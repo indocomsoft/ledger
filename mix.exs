@@ -33,8 +33,10 @@ defmodule Ledger.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:ecto_sql, "~> 3.6"},
       {:gettext, "~> 0.18"},
+      {:guardian, "~> 2.0"},
       {:jason, "~> 1.2"},
       {:phoenix, "~> 1.6.15"},
       {:phoenix_ecto, "~> 4.4"},

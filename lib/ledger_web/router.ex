@@ -5,8 +5,22 @@ defmodule LedgerWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :auth do
+    plug LedgerWeb.AuthPlug
+  end
+
+  # Unauthenticated
   scope "/api", LedgerWeb do
     pipe_through :api
+
+    post "/auth", AuthController, :create
+  end
+
+  # Authenticated
+  scope "/api", LedgerWeb do
+    pipe_through [:api, :auth]
+
+    get "/check", CheckController, :check
   end
 
   # Enables LiveDashboard only for development
