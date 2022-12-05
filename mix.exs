@@ -34,6 +34,7 @@ defmodule Ledger.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.6"},
       {:gettext, "~> 0.18"},
       {:guardian, "~> 2.0"},

@@ -5,9 +5,9 @@ defmodule Ledger.Accounts.User do
   alias Ledger.Accounts.User
 
   @type t :: %__MODULE__{
-          username: String.t(),
+          username: String.t() | nil,
           password: String.t() | nil,
-          hashed_password: String.t()
+          hashed_password: String.t() | nil
         }
 
   schema "users" do
