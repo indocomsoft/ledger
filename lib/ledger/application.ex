@@ -15,9 +15,10 @@ defmodule Ledger.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Ledger.PubSub},
       # Start the Endpoint (http/https)
-      LedgerWeb.Endpoint
+      LedgerWeb.Endpoint,
       # Start a worker by calling: Ledger.Worker.start_link(arg)
       # {Ledger.Worker, arg}
+      Ledger.Accounts.UserTokenCleaner
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

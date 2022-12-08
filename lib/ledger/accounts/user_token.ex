@@ -6,7 +6,6 @@ defmodule Ledger.Accounts.UserToken do
 
   @rand_size 32
 
-  # TODO add cron/GenServer to clean up old entries
   @session_validity_in_days 60
 
   schema "users_tokens" do
@@ -55,6 +54,12 @@ defmodule Ledger.Accounts.UserToken do
     |> where([user_token], user_token.inserted_at > ago(@session_validity_in_days, "day"))
     |> join(:inner, [user_token], user in assoc(user_token, :user))
     |> select([..., user], user)
+  end
+
+  @spec expired_session_token_query :: Ecto.Query.t()
+  def expired_session_token_query do
+    Ledger.Accounts.UserToken
+    |> where([t], t.inserted_at <= ago(@session_validity_in_days, "day"))
   end
 
   @doc """

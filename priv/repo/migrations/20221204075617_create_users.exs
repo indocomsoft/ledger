@@ -21,6 +21,7 @@ defmodule Ledger.Repo.Migrations.CreateUsers do
     end
 
     create index(:users_tokens, [:user_id])
+    create index(:users_tokens, [:inserted_at])
     create index(:users_tokens, [:context, :token, :inserted_at])
     create unique_index(:users_tokens, [:context, :token])
   end
