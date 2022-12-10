@@ -58,6 +58,9 @@ jobs:
       run: mix credo
     - name: Run tests
       run: mix test
+    - run: mix coveralls.github
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore PLT cache
       uses: actions/cache@v3
       id: plt_cache

@@ -11,6 +11,7 @@ defmodule Ledger.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      test_coverage: [tool: ExCoveralls],
       dialyzer: [plt_file: {:no_warn, "priv/plts/dialyzer.plt"}]
     ]
   end
@@ -38,6 +39,7 @@ defmodule Ledger.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.6"},
+      {:excoveralls, "~> 0.10", only: :test},
       {:gettext, "~> 0.18"},
       {:guardian, "~> 2.0"},
       {:jason, "~> 1.2"},
