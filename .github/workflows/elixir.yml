@@ -31,7 +31,7 @@ jobs:
         elixir: ['1.14.0']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Elixir
       id: beam
       uses: erlef/setup-elixir@v1
@@ -39,7 +39,7 @@ jobs:
         elixir-version: ${{ matrix.elixir }}
         otp-version: ${{ matrix.otp }}
     - name: Restore dependencies cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           api/_build
@@ -59,7 +59,7 @@ jobs:
     - name: Run tests
       run: mix test
     - name: Restore PLT cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: plt_cache
       with:
         key: |
@@ -71,5 +71,9 @@ jobs:
     - name: Create PLTs
       if: steps.plt_cache.outputs.cache-hit != 'true'
       run: mix dialyzer --plt
+      env:
+        MIX_ENV: dev
     - name: Run dialyzer
       run: mix dialyzer --format github
+      env:
+        MIX_ENV: dev
