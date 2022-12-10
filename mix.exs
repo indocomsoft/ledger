@@ -40,6 +40,7 @@ defmodule Ledger.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.6"},
       {:ex_cldr, "~> 2.33"},
+      {:ex_cldr_currencies, "~> 2.13"},
       {:excoveralls, "~> 0.10", only: :test},
       {:gettext, "~> 0.18"},
       {:guardian, "~> 2.0"},
