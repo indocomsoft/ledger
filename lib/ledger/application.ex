@@ -7,19 +7,22 @@ defmodule Ledger.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      # Start the Ecto repository
-      Ledger.Repo,
-      # Start the Telemetry supervisor
-      LedgerWeb.Telemetry,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: Ledger.PubSub},
-      # Start the Endpoint (http/https)
-      LedgerWeb.Endpoint,
-      # Start a worker by calling: Ledger.Worker.start_link(arg)
-      # {Ledger.Worker, arg}
-      Ledger.Accounts.UserTokenCleaner
-    ]
+    children =
+      [
+        # Start the Ecto repository
+        Ledger.Repo,
+        # Start the Telemetry supervisor
+        LedgerWeb.Telemetry,
+        # Start the PubSub system
+        {Phoenix.PubSub, name: Ledger.PubSub},
+        # Start the Endpoint (http/https)
+        LedgerWeb.Endpoint
+        # Start a worker by calling: Ledger.Worker.start_link(arg)
+        # {Ledger.Worker, arg}
+      ] ++
+        if Application.get_env(:ledger, Ledger.Accounts.UserTokenCleaner)[:start],
+          do: [Ledger.Accounts.UserTokenCleaner],
+          else: []
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
