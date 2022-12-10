@@ -4,17 +4,21 @@ defmodule Ledger.AccountsFixtures do
   entities via the `Ledger.Accounts` context.
   """
 
-  @doc """
-  Generate a user.
-  """
+  def unique_username, do: "user#{System.unique_integer([:positive])}"
+  def valid_user_password, do: "hello world!"
+
+  def valid_user_attributes(attrs \\ %{}) do
+    Enum.into(attrs, %{
+      username: unique_username(),
+      password: valid_user_password()
+    })
+  end
+
   def user_fixture(attrs \\ %{}) do
     {:ok, user} =
       attrs
-      |> Enum.into(%{
-        hashed_password: "some hashed_password",
-        username: "some username"
-      })
-      |> Ledger.Accounts.create_user()
+      |> valid_user_attributes()
+      |> Ledger.Accounts.register_user()
 
     user
   end

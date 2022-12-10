@@ -48,6 +48,7 @@ defmodule Ledger.Accounts.User do
     changeset
     |> validate_required([:username])
     |> validate_length(:username, max: 160)
+    |> validate_format(:username, ~r/^[A-Za-z0-9_]+$/, message: "only alphanumeric and underscore")
     |> unsafe_validate_unique(:username, Ledger.Repo)
     |> unique_constraint(:username)
   end
