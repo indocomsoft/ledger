@@ -28,3 +28,6 @@ config :logger, level: :warn
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Set the interval to be as short as possible for testing purposes
+config :ledger, Ledger.Accounts.UserTokenCleaner, interval_ms: 1

@@ -7,9 +7,6 @@ defmodule Ledger.Accounts.UserTokenCleaner do
 
   require Logger
 
-  # 1 hour
-  @interval_ms 60 * 60 * 1000
-
   @impl true
   def init(_) do
     handle_info(:cleanup, nil)
@@ -26,7 +23,8 @@ defmodule Ledger.Accounts.UserTokenCleaner do
 
     Logger.info("Deleted #{num_deleted} expired user tokens")
 
-    Process.send_after(self(), :cleanup, @interval_ms)
+    interval_ms = Application.get_env(:ledger, __MODULE__)[:interval_ms]
+    Process.send_after(self(), :cleanup, interval_ms)
 
     {:noreply, nil}
   end

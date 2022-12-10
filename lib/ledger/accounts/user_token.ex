@@ -66,6 +66,9 @@ defmodule Ledger.Accounts.UserToken do
     |> where([t], t.inserted_at <= ago(@session_validity_in_days, "day"))
   end
 
+  @spec session_validity_in_days :: integer()
+  def session_validity_in_days, do: @session_validity_in_days
+
   @doc """
   Returns the token struct for the given token value and context.
   """
