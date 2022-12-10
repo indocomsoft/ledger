@@ -39,6 +39,7 @@ defmodule Ledger.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.6"},
+      {:ex_cldr, "~> 2.33"},
       {:excoveralls, "~> 0.10", only: :test},
       {:gettext, "~> 0.18"},
       {:guardian, "~> 2.0"},
