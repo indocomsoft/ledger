@@ -1,0 +1,59 @@
+name: Elixir
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  elixir:
+    name: elixir
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:11
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      MIX_ENV: test
+
+    strategy:
+      matrix:
+        otp: ['25.0']
+        elixir: ['1.14.0']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Elixir
+      uses: erlef/setup-elixir@v1
+      with:
+        elixir-version: ${{ matrix.elixir }}
+        otp-version: ${{ matrix.otp }}
+    - name: Restore dependencies cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          api/_build
+          api/deps
+        key: mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: mix-${{ matrix.otp }}-${{ matrix.elixir }}-
+    - name: Install dependencies
+      run: |
+        mix local.rebar --force
+        mix local.hex --force
+        mix deps.get
+        mix compile
+    - name: Check formatting
+      run: mix format --check-formatted
+    - name: Run credo
+      run: mix credo
+    - name: Run tests
+      run: mix test
