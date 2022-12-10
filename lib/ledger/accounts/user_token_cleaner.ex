@@ -1,4 +1,8 @@
 defmodule Ledger.Accounts.UserTokenCleaner do
+  @moduledoc """
+  Cleans up expired user tokens from the database.
+  """
+
   use GenServer
 
   require Logger

@@ -1,4 +1,8 @@
 defmodule LedgerWeb.Auth do
+  @moduledoc """
+  Provides helpers for signing user session tokens and verifying them.
+  """
+
   @token_signing_salt "user auth"
 
   @spec sign(binary()) :: String.t()

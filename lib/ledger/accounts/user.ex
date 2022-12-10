@@ -1,4 +1,8 @@
 defmodule Ledger.Accounts.User do
+  @moduledoc """
+  Represents a user that can use ledger.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 

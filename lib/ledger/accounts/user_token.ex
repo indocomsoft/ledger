@@ -1,4 +1,8 @@
 defmodule Ledger.Accounts.UserToken do
+  @moduledoc """
+  Represents a session token that belongs to a user.
+  """
+
   use Ecto.Schema
   import Ecto.Query
   alias Ledger.Accounts.User

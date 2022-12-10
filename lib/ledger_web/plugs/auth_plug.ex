@@ -1,4 +1,9 @@
 defmodule LedgerWeb.AuthPlug do
+  @moduledoc """
+  This plug extracts the session token from the authorization bearer token HTTP header, verifies
+  that it hasn't been tampered with, and then checks that the session token belongs to a valid user.
+  """
+
   import Plug.Conn
 
   def init(opts), do: opts
