@@ -23,18 +23,7 @@ defmodule Ledger.Repo do
   end
 
   @impl true
-  @spec default_options(operation) :: Keyword.t()
-        when operation:
-               :all
-               | :insert_all
-               | :update_all
-               | :delete_all
-               | :stream
-               | :transaction
-               | :insert
-               | :update
-               | :delete
-               | :insert_or_update
+  @spec default_options(atom()) :: Keyword.t()
   def default_options(_operation) do
     case get_user_id() do
       nil -> []
