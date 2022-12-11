@@ -19,7 +19,7 @@ defmodule Ledger.Accounts.UserTokenCleaner do
 
     {num_deleted, nil} =
       Ledger.Accounts.UserToken.expired_session_token_query()
-      |> Ledger.Repo.delete_all()
+      |> Ledger.Repo.delete_all(skip_user_id: true)
 
     Logger.info("Deleted #{num_deleted} expired user tokens")
 

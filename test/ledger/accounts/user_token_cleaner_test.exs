@@ -41,11 +41,15 @@ defmodule Ledger.Accounts.UserTokenCleanerTest do
       expected = [expired_user_token_id, valid_user_token_id] |> Enum.sort()
 
       assert ^expected =
-               Ledger.Accounts.UserToken |> select([t], t.id) |> order_by(:id) |> Repo.all()
+               Ledger.Accounts.UserToken
+               |> select([t], t.id)
+               |> order_by(:id)
+               |> Repo.all(skip_user_id: true)
 
       Ledger.Accounts.UserTokenCleaner.handle_info(:cleanup, nil)
 
-      assert ^valid_user_token_id = Ledger.Accounts.UserToken |> select([t], t.id) |> Repo.one()
+      assert ^valid_user_token_id =
+               Ledger.Accounts.UserToken |> select([t], t.id) |> Repo.one(skip_user_id: true)
 
       assert_receive :cleanup
     end

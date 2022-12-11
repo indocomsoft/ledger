@@ -25,7 +25,7 @@ defmodule Ledger.Accounts do
   """
   @spec get_user_by_username(String.t()) :: User.t() | nil
   def get_user_by_username(username) when is_binary(username) do
-    Repo.get_by(User, username: username)
+    Repo.get_by(User, [username: username], skip_user_id: true)
   end
 
   @doc """
@@ -146,14 +146,14 @@ defmodule Ledger.Accounts do
   def get_user_by_session_token(token) when is_binary(token) do
     token
     |> UserToken.verify_session_token_query()
-    |> Repo.one()
+    |> Repo.one(skip_user_id: true)
   end
 
   @doc """
   Deletes the signed token with the given context.
   """
   def delete_session_token(token) do
-    Repo.delete_all(UserToken.token_and_context_query(token, "session"))
+    Repo.delete_all(UserToken.token_and_context_query(token, "session"), skip_user_id: true)
     :ok
   end
 end

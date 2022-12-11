@@ -5,13 +5,15 @@ defmodule LedgerWeb.AuthPlug do
   """
 
   import Plug.Conn
+  alias Ledger.Accounts.User
 
   def init(opts), do: opts
 
   def call(conn, _opts) do
     with ["Bearer " <> signed_token] <- get_req_header(conn, "authorization"),
          {:ok, token} <- LedgerWeb.Auth.verify(signed_token),
-         user = %Ledger.Accounts.User{} <- Ledger.Accounts.get_user_by_session_token(token) do
+         user = %User{id: user_id} <- Ledger.Accounts.get_user_by_session_token(token) do
+      Ledger.Repo.put_user_id(user_id)
       assign(conn, :current_user, user)
     else
       _ ->

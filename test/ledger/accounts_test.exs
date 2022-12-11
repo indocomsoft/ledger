@@ -94,7 +94,9 @@ defmodule Ledger.AccountsTest do
 
   describe "update_user_password/3" do
     setup do
-      %{user: user_fixture()}
+      user = %{id: user_id} = user_fixture()
+      Ledger.Repo.put_user_id(user_id)
+      %{user: user}
     end
 
     test "validates password", %{user: user} do
@@ -135,8 +137,11 @@ defmodule Ledger.AccountsTest do
       assert Accounts.get_user_by_username_and_password(username, "new valid password")
     end
 
-    test "deletes all tokens for the given user", %{user: user} do
-      _ = Accounts.generate_user_session_token(user)
+    test "deletes all tokens for the given user", %{user: user = %{id: user_id}} do
+      token = Accounts.generate_user_session_token(user)
+
+      assert Repo.get_by(UserToken, user_id: user_id)
+      assert Repo.get_by(UserToken, token: token)
 
       {:ok, _} =
         Accounts.update_user_password(user, valid_user_password(), %{
@@ -155,7 +160,8 @@ defmodule Ledger.AccountsTest do
     test "generates a token", %{user: user} do
       token = Accounts.generate_user_session_token(user)
 
-      assert %{context: "session", token: token} = Repo.get_by(UserToken, token: token)
+      assert %{context: "session", token: token} =
+               Repo.get_by(UserToken, [token: token], skip_user_id: true)
 
       # Creating the same token for another user should fail
       assert_raise Ecto.ConstraintError, fn ->
@@ -184,7 +190,11 @@ defmodule Ledger.AccountsTest do
     end
 
     test "does not return user for expired token", %{token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {1, nil} =
+        Repo.update_all(UserToken, [set: [inserted_at: ~N[2020-01-01 00:00:00]]],
+          skip_user_id: true
+        )
+
       refute Accounts.get_user_by_session_token(token)
     end
   end
