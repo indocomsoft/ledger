@@ -30,4 +30,29 @@ defmodule Ledger.Book do
     Account.child_account_changeset(parent_account, attrs)
     |> Repo.insert()
   end
+
+  @spec all_accounts_for_user(User.t()) :: [Account.t(), ...]
+  def all_accounts_for_user(%User{id: user_id}) do
+    Account
+    |> where(user_id: ^user_id)
+    |> Repo.all()
+  end
+
+  @spec get_account_by_external_id(binary()) :: Account.t() | nil
+  def get_account_by_external_id(external_id) do
+    Account
+    |> where(external_id: ^external_id)
+    |> Repo.one()
+  end
+
+  @spec delete_account(Account.t()) :: {:ok, Account.t()} | {:error, :root | Ecto.Changeset.t()}
+  def delete_account(%Account{account_type: :root}) do
+    {:error, :root}
+  end
+
+  def delete_account(account = %Account{}) do
+    # TODO prevent deletion when account is referenced in splits
+    # but honestly this can probably be implemented in the DB layer ON DELETE RESTRICT
+    Repo.delete(account)
+  end
 end
