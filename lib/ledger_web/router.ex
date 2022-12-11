@@ -21,6 +21,7 @@ defmodule LedgerWeb.Router do
     pipe_through [:api, :auth]
 
     get "/check", CheckController, :check
+    resources "/accounts", AccountController
   end
 
   # Enables LiveDashboard only for development
