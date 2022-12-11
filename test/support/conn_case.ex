@@ -26,13 +26,28 @@ defmodule LedgerWeb.ConnCase do
 
       alias LedgerWeb.Router.Helpers, as: Routes
 
+      import LedgerWeb.ExternalId
+
       # The default endpoint for testing
       @endpoint LedgerWeb.Endpoint
+
+      defp login(conn, user = %Ledger.Accounts.User{}) do
+        token =
+          user
+          |> Ledger.Accounts.generate_user_session_token()
+          |> LedgerWeb.Auth.sign()
+
+        put_req_header(conn, "authorization", "Bearer #{token}")
+      end
     end
   end
 
   setup tags do
     Ledger.DataCase.setup_sandbox(tags)
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+
+    {:ok,
+     conn:
+       Phoenix.ConnTest.build_conn()
+       |> Plug.Conn.put_req_header("content-type", "application/json")}
   end
 end

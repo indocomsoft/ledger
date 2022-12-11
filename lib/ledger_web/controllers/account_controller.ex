@@ -7,12 +7,17 @@ defmodule LedgerWeb.AccountController do
   @spec serialize_account(Account.t()) :: map()
   defp serialize_account(account = %Account{}) do
     %{
-      id: Base.url_encode64(account.external_id, padding: false),
+      id: encode_external_id(account.external_id),
       account_type: account.account_type,
       currency: account.currency,
       name: account.name,
       description: account.description,
-      placeholder: account.placeholder
+      placeholder: account.placeholder,
+      parent_id:
+        case account.parent do
+          nil -> nil
+          %{external_id: external_id} -> encode_external_id(external_id)
+        end
     }
   end
 
@@ -49,7 +54,7 @@ defmodule LedgerWeb.AccountController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, external_id} <- Base.url_decode64(id, padding: false),
+    with {:ok, external_id} <- decode_external_id(id),
          account = %Account{} <- Book.get_account_by_external_id(external_id) do
       conn
       |> put_status(:ok)
@@ -66,7 +71,7 @@ defmodule LedgerWeb.AccountController do
   end
 
   def delete(conn, %{"id" => id}) do
-    with {:ok, external_id} <- Base.url_decode64(id, padding: false),
+    with {:ok, external_id} <- decode_external_id(id),
          account = %Account{} <- Book.get_account_by_external_id(external_id),
          {:ok, account} <- Ledger.Book.delete_account(account) do
       conn

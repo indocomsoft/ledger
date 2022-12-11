@@ -4,8 +4,7 @@ defmodule LedgerWeb.AuthControllerTest do
 
   describe "create/2" do
     setup do
-      conn = build_conn() |> put_req_header("content-type", "application/json")
-      %{user: user_fixture(), conn: conn}
+      %{user: user_fixture()}
     end
 
     @spec login(Plug.Conn.t(), String.t(), String.t()) :: Plug.Conn.t()
@@ -13,7 +12,8 @@ defmodule LedgerWeb.AuthControllerTest do
       post(
         conn,
         Routes.auth_path(conn, :create),
-        Jason.encode!(%{"username" => username, "password" => password})
+        %{"username" => username, "password" => password}
+        # Jason.encode!(%{"username" => username, "password" => password})
       )
     end
 

@@ -33,16 +33,24 @@ defmodule Ledger.Book do
   end
 
   @spec all_accounts_for_user(User.t()) :: [Account.t(), ...]
-  def all_accounts_for_user(%User{id: user_id}) do
+  def all_accounts_for_user(user = %User{id: user_id}) do
     Account
     |> where(user_id: ^user_id)
+    |> join(:left, [a], p in assoc(a, :parent))
+    |> preload([a, p], parent: p)
     |> Repo.all()
+    |> case do
+      [] -> [create_or_get_root_account_for_user!(user)]
+      accounts -> accounts
+    end
   end
 
   @spec get_account_by_external_id(binary()) :: Account.t() | nil
   def get_account_by_external_id(external_id) do
     Account
     |> where(external_id: ^external_id)
+    |> join(:left, [a], p in assoc(a, :parent))
+    |> preload([a, p], parent: p)
     |> Repo.one()
   end
 

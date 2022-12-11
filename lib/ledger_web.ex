@@ -24,6 +24,8 @@ defmodule LedgerWeb do
       import Plug.Conn
       import LedgerWeb.Gettext
       alias LedgerWeb.Router.Helpers, as: Routes
+
+      import LedgerWeb.ExternalId
     end
   end
 

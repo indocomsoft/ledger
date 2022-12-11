@@ -33,9 +33,14 @@ defmodule Ledger.Repo do
 
   @tenant_key {__MODULE__, :user_id}
 
-  @spec put_user_id(integer()) :: integer() | nil
+  @spec put_user_id(integer() | nil) :: integer() | nil
   def put_user_id(user_id) when is_integer(user_id) do
     Process.put(@tenant_key, user_id)
+  end
+
+  @spec delete_user_id() :: integer() | nil
+  def delete_user_id() do
+    Process.delete(@tenant_key)
   end
 
   @spec get_user_id :: integer() | nil

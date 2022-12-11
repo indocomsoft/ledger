@@ -51,6 +51,7 @@ defmodule Ledger.Book.Account do
       parent_id: nil,
       user_id: user_id
     })
+    |> put_assoc(:parent, nil)
   end
 
   @spec child_account_changeset(Account.t(), map()) :: Ecto.Changeset.t()
