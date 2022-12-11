@@ -42,8 +42,8 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          api/_build
-          api/deps
+          _build
+          deps
         key: mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
         restore-keys: mix-${{ matrix.otp }}-${{ matrix.elixir }}-
     - name: Install dependencies
