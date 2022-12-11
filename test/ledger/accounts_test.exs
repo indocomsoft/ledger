@@ -57,11 +57,19 @@ defmodule Ledger.AccountsTest do
 
     test "validates username uniqueness" do
       %{username: username} = user_fixture()
-      {:error, changeset} = Accounts.register_user(%{username: username})
+
+      {:error, changeset} =
+        Accounts.register_user(%{username: username, password: valid_user_password()})
+
       assert "has already been taken" in errors_on(changeset).username
 
       # Now try with the upper cased username too, to check that username case is ignored.
-      {:error, changeset} = Accounts.register_user(%{username: String.upcase(username)})
+      {:error, changeset} =
+        Accounts.register_user(%{
+          username: String.upcase(username),
+          password: valid_user_password()
+        })
+
       assert "has already been taken" in errors_on(changeset).username
     end
 
