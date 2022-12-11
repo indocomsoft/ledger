@@ -34,6 +34,8 @@ defmodule Ledger.Book.Account do
     belongs_to :parent, Account
     belongs_to :user, User
 
+    has_many :children, Account
+
     timestamps()
   end
 

@@ -30,7 +30,7 @@ defmodule Ledger.Repo.Migrations.CreateAccounts do
             """,
             "ALTER TABLE accounts DROP COLUMN external_id"
 
-    create index(:accounts, [:user_id, :parent_id])
+    create index(:accounts, [:user_id, :account_type])
     create unique_index(:accounts, [:external_id])
     create unique_index(:accounts, [:user_id, :parent_id, :name])
 

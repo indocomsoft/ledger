@@ -4,6 +4,7 @@ defmodule Ledger.Book do
   """
 
   import Ecto.Query, warn: false
+  import Ecto.Changeset
   alias Ledger.Repo
 
   alias Ledger.Accounts.User
@@ -53,6 +54,22 @@ defmodule Ledger.Book do
   def delete_account(account = %Account{}) do
     # TODO prevent deletion when account is referenced in splits
     # but honestly this can probably be implemented in the DB layer ON DELETE RESTRICT
-    Repo.delete(account)
+    account
+    |> change()
+    |> no_assoc_constraint(:children, name: "accounts_parent_id_fkey")
+    |> Repo.delete()
+    |> case do
+      {:ok, account} ->
+        {:ok, account}
+
+      {:error, changeset = %Ecto.Changeset{errors: errors}} ->
+        case errors[:children] do
+          {_, [constraint: :no_assoc, constraint_name: "accounts_parent_id_fkey"]} ->
+            {:error, :has_children}
+
+          _ ->
+            {:error, changeset}
+        end
+    end
   end
 end

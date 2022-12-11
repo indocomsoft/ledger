@@ -67,18 +67,23 @@ defmodule LedgerWeb.AccountController do
 
   def delete(conn, %{"id" => id}) do
     with {:ok, external_id} <- Base.url_decode64(id, padding: false),
-         account = %Account{account_type: account_type} when account_type != :root <-
-           Book.get_account_by_external_id(external_id) do
-      {:ok, account} = Ledger.Book.delete_account(account)
-
+         account = %Account{} <- Book.get_account_by_external_id(external_id),
+         {:ok, account} <- Ledger.Book.delete_account(account) do
       conn
       |> put_status(:ok)
       |> json(serialize_account(account))
     else
-      %Account{account_type: :root} ->
+      {:error, :root} ->
         conn
         |> put_status(:method_not_allowed)
-        |> json(%{"error" => "cannot delete root account"})
+        |> json(%{"error" => "cannot delete the root account"})
+
+      # TODO handle this case more gracefully
+      # GNUCash offers to move the children to a different account
+      {:error, :has_children} ->
+        conn
+        |> put_status(:method_not_allowed)
+        |> json(%{"error" => "cannot delete an account that still has children"})
 
       _ ->
         conn |> put_status(:not_found) |> json(%{"error" => "not found"})
