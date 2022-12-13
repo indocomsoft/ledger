@@ -20,8 +20,6 @@ defmodule LedgerWeb.Router do
   scope "/api", LedgerWeb do
     pipe_through [:api, :auth]
 
-    get "/check", CheckController, :check
-
     resources "/accounts", AccountController, except: ~w(new edit create)a do
       post "/children", AccountController, :create
     end
