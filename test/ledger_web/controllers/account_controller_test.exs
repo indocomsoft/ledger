@@ -184,6 +184,24 @@ defmodule LedgerWeb.AccountControllerTest do
                |> json_response(400)
     end
 
+    test "validates account_type", %{conn: conn, accounts: %{root: root}} do
+      root_external_id = encode_external_id(root.external_id)
+
+      assert %{
+               "errors" => %{
+                 "account_type" => [
+                   "is invalid -- must be one of (root, asset, equity, liability, income, expense)"
+                 ]
+               }
+             } =
+               conn
+               |> post(
+                 Routes.account_account_path(conn, :create, root_external_id),
+                 @valid_attrs |> Map.put("account_type", "invalid")
+               )
+               |> json_response(400)
+    end
+
     test "validates that parent account can be found", %{conn: conn} do
       assert %{"error" => "parent account not found"} =
                conn
