@@ -21,7 +21,10 @@ defmodule LedgerWeb.Router do
     pipe_through [:api, :auth]
 
     get "/check", CheckController, :check
-    resources "/accounts", AccountController
+
+    resources "/accounts", AccountController, except: ~w(new edit create)a do
+      post "/children", AccountController, :create
+    end
   end
 
   # Enables LiveDashboard only for development

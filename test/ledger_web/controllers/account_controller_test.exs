@@ -121,5 +121,156 @@ defmodule LedgerWeb.AccountControllerTest do
       tax_id = accounts[:tax].id
       assert %Ledger.Book.Account{id: ^tax_id} = Ledger.Repo.get(Ledger.Book.Account, tax_id)
     end
+
+    test "validates that account can be found", %{conn: conn} do
+      assert %{"error" => "not found"} =
+               conn |> delete(Routes.account_path(conn, :delete, "unknown")) |> json_response(404)
+    end
+  end
+
+  describe "create/2" do
+    setup %{user: user} do
+      %{accounts: account_fixtures(user)}
+    end
+
+    @valid_attrs %{
+      "account_type" => "asset",
+      "name" => "Assets",
+      "placeholder" => true,
+      "currency" => "SGD"
+    }
+
+    test "happy path - new child of root", %{conn: conn, accounts: %{root: root}} do
+      root_external_id = encode_external_id(root.external_id)
+
+      valid_attrs = @valid_attrs
+
+      assert %{"parent_id" => ^root_external_id} =
+               ^valid_attrs =
+               conn
+               |> post(Routes.account_account_path(conn, :create, root_external_id), valid_attrs)
+               |> json_response(200)
+    end
+
+    test "happy path - new child of child", %{conn: conn, accounts: %{income: income}} do
+      income_external_id = encode_external_id(income.external_id)
+
+      valid_attrs = @valid_attrs |> Map.put("account_type", "income") |> Map.put("name", "Salary")
+
+      assert %{"parent_id" => ^income_external_id} =
+               ^valid_attrs =
+               conn
+               |> post(
+                 Routes.account_account_path(conn, :create, income_external_id),
+                 valid_attrs
+               )
+               |> json_response(200)
+    end
+
+    test "validates new child account type cannot be root", %{
+      conn: conn,
+      accounts: %{income: income}
+    } do
+      income_external_id = encode_external_id(income.external_id)
+
+      invalid_attrs = @valid_attrs |> Map.put("account_type", "root")
+
+      assert %{"errors" => %{"account_type" => ["cannot be root for child accounts"]}} =
+               conn
+               |> post(
+                 Routes.account_account_path(conn, :create, income_external_id),
+                 invalid_attrs
+               )
+               |> json_response(400)
+    end
+
+    test "validates that parent account can be found", %{conn: conn} do
+      assert %{"error" => "parent account not found"} =
+               conn
+               |> post(Routes.account_account_path(conn, :create, "unknown"), @valid_attrs)
+               |> json_response(404)
+    end
+  end
+
+  describe "update/2" do
+    setup %{user: user} do
+      %{accounts: account_fixtures(user)}
+    end
+
+    @valid_attrs %{
+      "placeholder" => false,
+      "name" => "US Tax"
+    }
+
+    test "happy path", %{conn: conn, accounts: %{tax: tax}} do
+      tax_external_id = encode_external_id(tax.external_id)
+
+      attrs = @valid_attrs
+
+      assert %{"id" => ^tax_external_id} =
+               ^attrs =
+               conn
+               |> put(Routes.account_path(conn, :update, tax_external_id), attrs)
+               |> json_response(200)
+    end
+
+    test "handles not found correctly", %{conn: conn} do
+      assert %{"error" => "not found"} =
+               conn
+               |> put(Routes.account_path(conn, :update, "unknown"), @valid_attrs)
+               |> json_response(404)
+    end
+
+    test "ensures name is unique", %{conn: conn, accounts: %{us_state_tax: us_state_tax}} do
+      us_state_tax_external_id = encode_external_id(us_state_tax.external_id)
+
+      assert %{"errors" => %{"name" => ["has to be unique for a given parent account"]}} =
+               conn
+               |> put(Routes.account_path(conn, :update, us_state_tax_external_id), %{
+                 "name" => "US Federal Tax"
+               })
+               |> json_response(400)
+    end
+
+    test "validate cannot update root account", %{conn: conn, accounts: %{root: root}} do
+      root_external_id = encode_external_id(root.external_id)
+
+      assert %{"error" => "cannot update the root account"} =
+               conn
+               |> put(Routes.account_path(conn, :update, root_external_id), @valid_attrs)
+               |> json_response(405)
+    end
+
+    test "parent_id - happy path", %{conn: conn, accounts: %{root: root, tax: tax}} do
+      root_external_id = encode_external_id(root.external_id)
+      tax_external_id = encode_external_id(tax.external_id)
+
+      assert %{"id" => ^tax_external_id, "parent_id" => ^root_external_id} =
+               conn
+               |> put(Routes.account_path(conn, :update, tax_external_id), %{
+                 "parent_id" => root_external_id
+               })
+               |> json_response(200)
+    end
+
+    test "parent_id - ensure parent account exists", %{conn: conn, accounts: %{tax: tax}} do
+      tax_external_id = encode_external_id(tax.external_id)
+
+      assert %{"errors" => %{"parent_id" => ["not found"]}} =
+               conn
+               |> put(Routes.account_path(conn, :update, tax_external_id), %{
+                 "parent_id" => "unknown"
+               })
+               |> json_response(400)
+    end
+
+    test "parent_id - validates against setting it to nil", %{conn: conn, accounts: %{tax: tax}} do
+      tax_external_id = encode_external_id(tax.external_id)
+
+      assert %{"errors" => %{"parent_id" => ["cannot be null"]}} =
+               conn
+               |> put(Routes.account_path(conn, :update, tax_external_id), %{"parent_id" => nil})
+               |> json_response(400)
+    end
   end
 end

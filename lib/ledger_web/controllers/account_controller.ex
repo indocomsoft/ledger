@@ -4,6 +4,16 @@ defmodule LedgerWeb.AccountController do
   alias Ledger.Book
   alias Ledger.Book.Account
 
+  @spec load_account(String.t()) :: {:ok, Account.t()} | {:error, :not_found}
+  defp load_account(external_id) do
+    with {:ok, external_id} <- decode_external_id(external_id),
+         account = %Account{} <- Book.get_account_by_external_id(external_id) do
+      {:ok, account}
+    else
+      _ -> {:error, :not_found}
+    end
+  end
+
   @spec serialize_account(Account.t()) :: map()
   defp serialize_account(account = %Account{}) do
     %{
@@ -47,32 +57,75 @@ defmodule LedgerWeb.AccountController do
     |> json(account_tree)
   end
 
-  def create(conn, _params) do
-    conn
-    |> put_status(:not_implemented)
-    |> json(%{"error" => "TODO to be implemented"})
+  def create(conn, params = %{"account_id" => parent_id}) do
+    with {:ok, parent_account} <- load_account(parent_id),
+         attrs = Map.delete(params, "account_id"),
+         {:ok, child_account = %Account{}} <- Book.create_child_account(parent_account, attrs) do
+      conn |> put_status(:ok) |> json(serialize_account(child_account))
+    else
+      {:error, changeset = %Ecto.Changeset{}} ->
+        conn
+        |> put_status(:bad_request)
+        |> put_view(LedgerWeb.ErrorView)
+        |> render("changeset_error.json", changeset: changeset)
+
+      _ ->
+        conn |> put_status(:not_found) |> json(%{"error" => "parent account not found"})
+    end
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, external_id} <- decode_external_id(id),
-         account = %Account{} <- Book.get_account_by_external_id(external_id) do
+    case load_account(id) do
+      {:ok, account} ->
+        conn
+        |> put_status(:ok)
+        |> json(serialize_account(account))
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{"error" => "not found"})
+    end
+  end
+
+  def update(conn, params = %{"parent_id" => parent_id}) when is_binary(parent_id) do
+    case load_account(parent_id) do
+      {:ok, parent_account = %Account{}} ->
+        update(conn, Map.delete(params, "parent_id"), parent_account)
+
+      {:error, :not_found} ->
+        conn |> put_status(:bad_request) |> json(%{"errors" => %{"parent_id" => ["not found"]}})
+    end
+  end
+
+  def update(conn, params = %{"parent_id" => nil}) do
+    conn |> put_status(:bad_request) |> json(%{"errors" => %{"parent_id" => ["cannot be null"]}})
+  end
+
+  def update(conn, params = %{"id" => id}, parent_account \\ nil) do
+    with {:ok, account} <- load_account(id),
+         attrs = Map.delete(params, "id"),
+         {:ok, account = %Account{}} <- Book.update_account(account, attrs, parent_account) do
       conn
       |> put_status(:ok)
       |> json(serialize_account(account))
     else
-      _ -> conn |> put_status(:not_found) |> json(%{"error" => "not found"})
+      {:error, :root} ->
+        conn
+        |> put_status(:method_not_allowed)
+        |> json(%{"error" => "cannot update the root account"})
+
+      {:error, changeset = %Ecto.Changeset{}} ->
+        conn
+        |> put_status(:bad_request)
+        |> put_view(LedgerWeb.ErrorView)
+        |> render("changeset_error.json", changeset: changeset)
+
+      _ ->
+        conn |> put_status(:not_found) |> json(%{"error" => "not found"})
     end
   end
 
-  def update(conn, _params) do
-    conn
-    |> put_status(:not_implemented)
-    |> json(%{"error" => "TODO to be implemented"})
-  end
-
   def delete(conn, %{"id" => id}) do
-    with {:ok, external_id} <- decode_external_id(id),
-         account = %Account{} <- Book.get_account_by_external_id(external_id),
+    with {:ok, account} <- load_account(id),
          {:ok, account} <- Ledger.Book.delete_account(account) do
       conn
       |> put_status(:ok)

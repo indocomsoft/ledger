@@ -31,7 +31,7 @@ defmodule Ledger.Book.Account do
     field :name, :string
     field :description, :string
     field :placeholder, :boolean
-    belongs_to :parent, Account
+    belongs_to :parent, Account, on_replace: :nilify
     belongs_to :user, User
 
     has_many :children, Account
@@ -48,7 +48,6 @@ defmodule Ledger.Book.Account do
       currency: :SGD,
       name: "Root Account",
       placeholder: true,
-      parent_id: nil,
       user_id: user_id
     })
     |> put_assoc(:parent, nil)
@@ -58,19 +57,31 @@ defmodule Ledger.Book.Account do
   def child_account_changeset(parent_account = %Account{user_id: user_id}, attrs) do
     %Account{user_id: user_id}
     |> cast(attrs, [:account_type, :currency, :name, :description, :placeholder])
-    |> put_assoc(:parent, parent_account)
+    |> put_parent_assoc(parent_account)
+    |> validate_fields()
+  end
+
+  @spec validate_fields(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  defp validate_fields(changeset) do
+    changeset
     |> validate_required([:account_type, :currency, :name, :placeholder])
-    |> validate_child_account_type()
     |> unique_constraint([:user_id, :parent_id, :name],
       error_key: :name,
       message: "has to be unique for a given parent account"
     )
   end
 
+  @spec put_parent_assoc(Ecto.Changeset.t(), Account.t() | nil) :: Ecto.Changeset.t()
+  defp put_parent_assoc(changeset, parent_account) do
+    changeset
+    |> put_assoc(:parent, parent_account)
+    |> validate_child_account_type()
+  end
+
   @spec validate_child_account_type(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp validate_child_account_type(changeset) do
-    account_type = get_change(changeset, :account_type)
-    parent_account_type = changeset |> get_change(:parent) |> fetch_field!(:account_type)
+    account_type = fetch_field!(changeset, :account_type)
+    parent_account_type = fetch_field!(changeset, :parent).account_type
 
     if account_type == :root do
       add_error(changeset, :account_type, "cannot be root for child accounts")
@@ -80,6 +91,19 @@ defmodule Ledger.Book.Account do
       else
         add_error(changeset, :account_type, "must match its parent account type")
       end
+    end
+  end
+
+  @spec update_changeset(Account.t(), map(), Account.t() | nil) :: Ecto.Changeset.t()
+  def update_changeset(account, attrs, parent_account) do
+    changeset =
+      account
+      |> cast(attrs, [:name, :description, :placeholder])
+      |> validate_fields()
+
+    case parent_account do
+      nil -> changeset
+      _ -> put_parent_assoc(changeset, parent_account)
     end
   end
 end
