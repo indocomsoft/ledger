@@ -290,5 +290,19 @@ defmodule LedgerWeb.AccountControllerTest do
                |> put(Routes.account_path(conn, :update, tax_external_id), %{"parent_id" => nil})
                |> json_response(400)
     end
+
+    test "parent_id - validates against setting it to itself", %{
+      conn: conn,
+      accounts: %{tax: tax}
+    } do
+      tax_external_id = encode_external_id(tax.external_id)
+
+      assert %{"errors" => %{"parent_id" => ["cannot be pointing to itself"]}} =
+               conn
+               |> put(Routes.account_path(conn, :update, tax_external_id), %{
+                 "parent_id" => tax_external_id
+               })
+               |> json_response(400)
+    end
   end
 end

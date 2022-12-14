@@ -96,7 +96,13 @@ defmodule LedgerWeb.AccountController do
     end
   end
 
-  def update(conn, params = %{"parent_id" => nil}) do
+  def update(conn, %{"parent_id" => id, "id" => id}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{"errors" => %{"parent_id" => ["cannot be pointing to itself"]}})
+  end
+
+  def update(conn, %{"parent_id" => nil}) do
     conn |> put_status(:bad_request) |> json(%{"errors" => %{"parent_id" => ["cannot be null"]}})
   end
 

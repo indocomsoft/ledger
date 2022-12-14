@@ -76,6 +76,7 @@ defmodule Ledger.Book.Account do
     changeset
     |> put_assoc(:parent, parent_account)
     |> validate_child_account_type()
+    |> validate_parent_id()
   end
 
   @spec validate_child_account_type(Ecto.Changeset.t()) :: Ecto.Changeset.t()
@@ -91,6 +92,18 @@ defmodule Ledger.Book.Account do
       else
         add_error(changeset, :account_type, "must match its parent account type")
       end
+    end
+  end
+
+  @spec validate_parent_id(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  defp validate_parent_id(changeset) do
+    id = fetch_field!(changeset, :id)
+    parent_id = fetch_field!(changeset, :parent).id
+
+    if id == parent_id do
+      add_error(changeset, :parent_id, "cannot be pointing to itself")
+    else
+      changeset
     end
   end
 
