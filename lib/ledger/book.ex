@@ -66,6 +66,42 @@ defmodule Ledger.Book do
     |> Repo.update()
   end
 
+  @spec update_account_parent_id(Account.t(), Account.t()) ::
+          {:ok, Account.t()} | {:error, term()}
+  def update_account_parent_id(
+        account = %Account{id: id},
+        parent_account = %Account{id: new_parent_id}
+      ) do
+    Repo.transaction(fn ->
+      initial_query = Account |> where(id: ^id)
+
+      recursion_query =
+        Account |> join(:inner, [a], s in "self_and_descendants", on: a.parent_id == s.id)
+
+      query = initial_query |> union_all(^recursion_query)
+
+      self_and_descendants =
+        "self_and_descendants"
+        |> recursive_ctes(true)
+        |> with_cte("self_and_descendants", as: ^query)
+        |> select([s], s.id)
+        |> Repo.all()
+
+      if new_parent_id in self_and_descendants do
+        Repo.rollback(:in_self_and_descendants)
+      else
+        account
+        |> change()
+        |> Account.put_parent_assoc(parent_account)
+        |> Repo.update()
+        |> case do
+          {:ok, account} -> account
+          {:error, error} -> Repo.rollback(error)
+        end
+      end
+    end)
+  end
+
   @spec delete_account(Account.t()) :: {:ok, Account.t()} | {:error, :root | Ecto.Changeset.t()}
   def delete_account(%Account{account_type: :root}) do
     {:error, :root}

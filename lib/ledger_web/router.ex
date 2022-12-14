@@ -22,6 +22,9 @@ defmodule LedgerWeb.Router do
 
     resources "/accounts", AccountController, except: ~w(new edit create)a do
       post "/children", AccountController, :create
+
+      put "/parent_id", AccountController, :update_parent_id, as: :parent_id
+      patch "/parent_id", AccountController, :update_parent_id, as: nil
     end
   end
 

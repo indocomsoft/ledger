@@ -65,14 +65,14 @@ defmodule Ledger.Book.Account do
   defp validate_fields(changeset) do
     changeset
     |> validate_required([:account_type, :currency, :name, :placeholder])
-    |> unique_constraint([:user_id, :parent_id, :name],
+    |> unique_constraint([:parent_id, :user_id, :name],
       error_key: :name,
       message: "has to be unique for a given parent account"
     )
   end
 
   @spec put_parent_assoc(Ecto.Changeset.t(), Account.t() | nil) :: Ecto.Changeset.t()
-  defp put_parent_assoc(changeset, parent_account) do
+  def put_parent_assoc(changeset, parent_account) do
     changeset
     |> put_assoc(:parent, parent_account)
     |> validate_child_account_type()

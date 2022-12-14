@@ -260,49 +260,69 @@ defmodule LedgerWeb.AccountControllerTest do
     end
   end
 
-  # test "parent_id - happy path", %{conn: conn, accounts: %{root: root, tax: tax}} do
-  #   root_external_id = encode_external_id(root.external_id)
-  #   tax_external_id = encode_external_id(tax.external_id)
+  describe "update_parent_id/2" do
+    setup %{user: user} do
+      %{accounts: account_fixtures(user)}
+    end
 
-  #   assert %{"id" => ^tax_external_id, "parent_id" => ^root_external_id} =
-  #            conn
-  #            |> put(Routes.account_path(conn, :update, tax_external_id), %{
-  #              "parent_id" => root_external_id
-  #            })
-  #            |> json_response(200)
-  # end
+    test "happy path", %{conn: conn, accounts: %{root: root, tax: tax}} do
+      root_external_id = encode_external_id(root.external_id)
+      tax_external_id = encode_external_id(tax.external_id)
 
-  # test "parent_id - ensure parent account exists", %{conn: conn, accounts: %{tax: tax}} do
-  #   tax_external_id = encode_external_id(tax.external_id)
+      assert %{"id" => ^tax_external_id, "parent_id" => ^root_external_id} =
+               conn
+               |> put(Routes.account_parent_id_path(conn, :update_parent_id, tax_external_id), %{
+                 "parent_id" => root_external_id
+               })
+               |> json_response(200)
+    end
 
-  #   assert %{"errors" => %{"parent_id" => ["not found"]}} =
-  #            conn
-  #            |> put(Routes.account_path(conn, :update, tax_external_id), %{
-  #              "parent_id" => "unknown"
-  #            })
-  #            |> json_response(400)
-  # end
+    test "ensure parent account exists", %{conn: conn, accounts: %{tax: tax}} do
+      tax_external_id = encode_external_id(tax.external_id)
 
-  # test "parent_id - validates against setting it to nil", %{conn: conn, accounts: %{tax: tax}} do
-  #   tax_external_id = encode_external_id(tax.external_id)
+      assert %{"errors" => %{"parent_id" => ["not found"]}} =
+               conn
+               |> put(Routes.account_parent_id_path(conn, :update_parent_id, tax_external_id), %{
+                 "parent_id" => "unknown"
+               })
+               |> json_response(400)
+    end
 
-  #   assert %{"errors" => %{"parent_id" => ["cannot be null"]}} =
-  #            conn
-  #            |> put(Routes.account_path(conn, :update, tax_external_id), %{"parent_id" => nil})
-  #            |> json_response(400)
-  # end
+    test "validates against setting it to nil", %{conn: conn, accounts: %{tax: tax}} do
+      tax_external_id = encode_external_id(tax.external_id)
 
-  # test "parent_id - validates against setting it to itself", %{
-  #   conn: conn,
-  #   accounts: %{tax: tax}
-  # } do
-  #   tax_external_id = encode_external_id(tax.external_id)
+      assert %{"errors" => %{"parent_id" => ["cannot be blank"]}} =
+               conn
+               |> put(Routes.account_parent_id_path(conn, :update_parent_id, tax_external_id), %{
+                 "parent_id" => nil
+               })
+               |> json_response(400)
+    end
 
-  #   assert %{"errors" => %{"parent_id" => ["cannot be pointing to itself"]}} =
-  #            conn
-  #            |> put(Routes.account_path(conn, :update, tax_external_id), %{
-  #              "parent_id" => tax_external_id
-  #            })
-  #            |> json_response(400)
-  # end
+    test "validates against setting it to itself", %{conn: conn, accounts: %{tax: tax}} do
+      tax_external_id = encode_external_id(tax.external_id)
+
+      assert %{"errors" => %{"parent_id" => ["cannot be self or its descendants"]}} =
+               conn
+               |> put(Routes.account_parent_id_path(conn, :update_parent_id, tax_external_id), %{
+                 "parent_id" => tax_external_id
+               })
+               |> json_response(400)
+    end
+
+    test "validates against setting it to its children", %{
+      conn: conn,
+      accounts: %{tax: tax, us_state_tax: us_state_tax}
+    } do
+      tax_external_id = encode_external_id(tax.external_id)
+      us_state_tax_external_id = encode_external_id(us_state_tax.external_id)
+
+      assert %{"errors" => %{"parent_id" => ["cannot be self or its descendants"]}} =
+               conn
+               |> put(Routes.account_parent_id_path(conn, :update_parent_id, tax_external_id), %{
+                 "parent_id" => us_state_tax_external_id
+               })
+               |> json_response(400)
+    end
+  end
 end

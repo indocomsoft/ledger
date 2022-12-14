@@ -110,6 +110,29 @@ defmodule LedgerWeb.AccountController do
     end
   end
 
+  def update_parent_id(conn, %{"parent_id" => nil}) do
+    conn |> put_status(:bad_request) |> json(%{"errors" => %{"parent_id" => ["cannot be blank"]}})
+  end
+
+  def update_parent_id(conn, %{"account_id" => id, "parent_id" => parent_id}) do
+    with {:ok, account} <- load_account(id),
+         {:parent, {:ok, new_parent}} <- {:parent, load_account(parent_id)},
+         {:ok, account} <- Book.update_account_parent_id(account, new_parent) do
+      conn |> put_status(:ok) |> json(serialize_account(account))
+    else
+      {:error, :in_self_and_descendants} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{"errors" => %{"parent_id" => ["cannot be self or its descendants"]}})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{"error" => "not found"})
+
+      {:parent, {:error, :not_found}} ->
+        conn |> put_status(:bad_request) |> json(%{"errors" => %{"parent_id" => ["not found"]}})
+    end
+  end
+
   def delete(conn, %{"id" => id}) do
     with {:ok, account} <- load_account(id),
          {:ok, account} <- Ledger.Book.delete_account(account) do
