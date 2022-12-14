@@ -86,30 +86,10 @@ defmodule LedgerWeb.AccountController do
     end
   end
 
-  def update(conn, params = %{"parent_id" => parent_id}) when is_binary(parent_id) do
-    case load_account(parent_id) do
-      {:ok, parent_account = %Account{}} ->
-        update(conn, Map.delete(params, "parent_id"), parent_account)
-
-      {:error, :not_found} ->
-        conn |> put_status(:bad_request) |> json(%{"errors" => %{"parent_id" => ["not found"]}})
-    end
-  end
-
-  def update(conn, %{"parent_id" => id, "id" => id}) do
-    conn
-    |> put_status(:bad_request)
-    |> json(%{"errors" => %{"parent_id" => ["cannot be pointing to itself"]}})
-  end
-
-  def update(conn, %{"parent_id" => nil}) do
-    conn |> put_status(:bad_request) |> json(%{"errors" => %{"parent_id" => ["cannot be null"]}})
-  end
-
-  def update(conn, params = %{"id" => id}, parent_account \\ nil) do
+  def update(conn, params = %{"id" => id}) do
     with {:ok, account} <- load_account(id),
          attrs = Map.delete(params, "id"),
-         {:ok, account = %Account{}} <- Book.update_account(account, attrs, parent_account) do
+         {:ok, account = %Account{}} <- Book.update_account(account, attrs) do
       conn
       |> put_status(:ok)
       |> json(serialize_account(account))

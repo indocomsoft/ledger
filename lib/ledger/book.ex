@@ -54,15 +54,15 @@ defmodule Ledger.Book do
     |> Repo.one()
   end
 
-  @spec update_account(Account.t(), map(), Account.t() | nil) ::
+  @spec update_account(Account.t(), map()) ::
           {:ok, Account.t()} | {:error, :root | Ecto.Changeset.t()}
-  def update_account(%Account{account_type: :root}, _attrs, _parent_account) do
+  def update_account(%Account{account_type: :root}, _attrs) do
     {:error, :root}
   end
 
-  def update_account(account = %Account{}, attrs, parent_account) do
+  def update_account(account = %Account{}, attrs) do
     account
-    |> Account.update_changeset(attrs, parent_account)
+    |> Account.update_changeset(attrs)
     |> Repo.update()
   end
 
