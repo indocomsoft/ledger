@@ -39,12 +39,11 @@ defmodule Ledger.Book.Account do
   end
 
   @spec create_root_account_for_user_changeset(User.t()) :: Ecto.Changeset.t()
-  def create_root_account_for_user_changeset(%User{id: user_id}) do
+  def create_root_account_for_user_changeset(%User{id: user_id, base_currency: base_currency}) do
     %Account{}
     |> change(%{
       account_type: :root,
-      # TODO: save user's base currency in a UserPreference table
-      currency: :SGD,
+      currency: base_currency,
       name: "Root Account",
       placeholder: true,
       user_id: user_id

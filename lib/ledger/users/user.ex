@@ -18,6 +18,7 @@ defmodule Ledger.Users.User do
     field :username, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
+    field :base_currency, Ecto.Enum, values: Cldr.known_currencies()
 
     timestamps()
   end
@@ -42,9 +43,10 @@ defmodule Ledger.Users.User do
   @spec registration_changeset(t(), map(), hash_password: boolean()) :: Ecto.Changeset.t()
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:username, :password])
+    |> cast(attrs, [:username, :password, :base_currency])
     |> validate_username()
     |> validate_password(opts)
+    |> validate_required([:base_currency])
   end
 
   @spec validate_username(Ecto.Changeset.t()) :: Ecto.Changeset.t()

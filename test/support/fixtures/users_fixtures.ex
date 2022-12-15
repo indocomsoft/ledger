@@ -10,7 +10,8 @@ defmodule Ledger.UsersFixtures do
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
       username: unique_username(),
-      password: valid_user_password()
+      password: valid_user_password(),
+      base_currency: :SGD
     })
   end
 

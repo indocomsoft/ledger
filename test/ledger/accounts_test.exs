@@ -46,8 +46,7 @@ defmodule Ledger.UsersTest do
     end
 
     test "validates username and password when given" do
-      {:error, changeset} =
-        Users.register_user(%{username: "not valid", password: "not valid"})
+      {:error, changeset} = Users.register_user(%{username: "not valid", password: "not valid"})
 
       assert %{
                username: ["only alphanumeric and underscore"],
@@ -59,7 +58,11 @@ defmodule Ledger.UsersTest do
       %{username: username} = user_fixture()
 
       {:error, changeset} =
-        Users.register_user(%{username: username, password: valid_user_password()})
+        Users.register_user(%{
+          username: username,
+          password: valid_user_password(),
+          base_currency: :SGD
+        })
 
       assert "has already been taken" in errors_on(changeset).username
 
@@ -67,7 +70,8 @@ defmodule Ledger.UsersTest do
       {:error, changeset} =
         Users.register_user(%{
           username: String.upcase(username),
-          password: valid_user_password()
+          password: valid_user_password(),
+          base_currency: :SGD
         })
 
       assert "has already been taken" in errors_on(changeset).username

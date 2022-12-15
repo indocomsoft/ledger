@@ -67,6 +67,17 @@ defmodule Ledger.Users do
   end
 
   @doc """
+  A convenience function that takes in the parameters directly instead of a map.
+  """
+  @spec register_user(String.t(), String.t(), String.t() | atom()) ::
+          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def register_user(username, password, base_currency)
+      when is_binary(username) and is_binary(password) and
+             (is_binary(base_currency) or is_atom(base_currency)) do
+    register_user(%{username: username, password: password, base_currency: base_currency})
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for changing the user password.
 
   ## Examples

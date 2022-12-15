@@ -7,6 +7,7 @@ defmodule Ledger.Repo.Migrations.CreateUsers do
     create table(:users) do
       add :username, :citext, null: false
       add :hashed_password, :string, null: false
+      add :base_currency, :string, null: false
 
       timestamps()
     end
