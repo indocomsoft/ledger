@@ -22,12 +22,11 @@ defmodule Ledger.Book.Account do
         }
 
   @account_type_values ~w(root asset equity liability income expense)a
-  @currencies Cldr.known_currencies()
 
   schema "accounts" do
     field :external_id, :binary, read_after_writes: true
     field :account_type, Ecto.Enum, values: @account_type_values
-    field :currency, Ecto.Enum, values: @currencies
+    field :currency, Ecto.Enum, values: Cldr.known_currencies()
     field :name, :string
     field :description, :string
     field :placeholder, :boolean

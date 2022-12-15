@@ -15,7 +15,7 @@ defmodule LedgerWeb.ErrorView do
           valid_values = Keyword.values(mappings)
           "is invalid -- must be one of (#{Enum.join(valid_values, ", ")})"
 
-        {message, opts} ->
+        {message, _opts} ->
           message
       end)
 
