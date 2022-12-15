@@ -145,8 +145,9 @@ defmodule LedgerWeb.AccountController do
         |> put_status(:method_not_allowed)
         |> json(%{"error" => "cannot delete the root account"})
 
-      # TODO handle this case more gracefully
-      # GNUCash offers to move the children to a different account
+      # For this case, GNUCash offers to move the children to a different account.
+      # So this is really a call for action for the client to call the update_parent_id endpoint
+      # before calling this endpoint.
       {:error, :has_children} ->
         conn
         |> put_status(:method_not_allowed)
