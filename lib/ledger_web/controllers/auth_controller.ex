@@ -2,9 +2,9 @@ defmodule LedgerWeb.AuthController do
   use LedgerWeb, :controller
 
   def create(conn, %{"username" => username, "password" => password}) do
-    case Ledger.Accounts.get_user_by_username_and_password(username, password) do
-      user = %Ledger.Accounts.User{} ->
-        raw_token = Ledger.Accounts.generate_user_session_token(user)
+    case Ledger.Users.get_user_by_username_and_password(username, password) do
+      user = %Ledger.Users.User{} ->
+        raw_token = Ledger.Users.generate_user_session_token(user)
         token = LedgerWeb.Auth.sign(raw_token)
 
         json(conn, %{token: token})

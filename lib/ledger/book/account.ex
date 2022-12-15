@@ -6,7 +6,7 @@ defmodule Ledger.Book.Account do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Ledger.Accounts.User
+  alias Ledger.Users.User
   alias Ledger.Book.Account
 
   @type account_type :: :root | :asset | :equity | :liability | :income | :expense

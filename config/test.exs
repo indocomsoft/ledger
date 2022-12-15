@@ -30,4 +30,4 @@ config :logger, level: :warn
 config :phoenix, :plug_init_mode, :runtime
 
 # Set the interval to be as short as possible for testing purposes
-config :ledger, Ledger.Accounts.UserTokenCleaner, interval_ms: 1
+config :ledger, Ledger.Users.UserTokenCleaner, interval_ms: 1

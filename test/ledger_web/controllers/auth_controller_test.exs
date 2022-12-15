@@ -1,6 +1,6 @@
 defmodule LedgerWeb.AuthControllerTest do
   use LedgerWeb.ConnCase, async: true
-  import Ledger.AccountsFixtures
+  import Ledger.UsersFixtures
 
   describe "create/2" do
     setup do
@@ -25,7 +25,7 @@ defmodule LedgerWeb.AuthControllerTest do
                login(conn, username, valid_user_password()) |> json_response(200)
 
       {:ok, verified_token} = LedgerWeb.Auth.verify(token)
-      assert %{id: ^user_id} = Ledger.Accounts.get_user_by_session_token(verified_token)
+      assert %{id: ^user_id} = Ledger.Users.get_user_by_session_token(verified_token)
     end
 
     test "returns 401 on wrong username/password", %{user: %{username: username}, conn: conn} do

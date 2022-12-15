@@ -82,4 +82,4 @@ if config_env() == :prod do
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end
 
-config :ledger, Ledger.Accounts.UserTokenCleaner, start: config_env() != :test
+config :ledger, Ledger.Users.UserTokenCleaner, start: config_env() != :test

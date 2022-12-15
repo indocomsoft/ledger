@@ -1,4 +1,4 @@
-defmodule Ledger.Accounts.UserTokenCleaner do
+defmodule Ledger.Users.UserTokenCleaner do
   @moduledoc """
   Cleans up expired user tokens from the database.
   """
@@ -18,7 +18,7 @@ defmodule Ledger.Accounts.UserTokenCleaner do
     Logger.info("Cleaning up expired user tokens")
 
     {num_deleted, nil} =
-      Ledger.Accounts.UserToken.expired_session_token_query()
+      Ledger.Users.UserToken.expired_session_token_query()
       |> Ledger.Repo.delete_all(skip_user_id: true)
 
     Logger.info("Deleted #{num_deleted} expired user tokens")

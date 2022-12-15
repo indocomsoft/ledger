@@ -1,6 +1,6 @@
 defmodule LedgerWeb.AccountControllerTest do
   use LedgerWeb.ConnCase, async: true
-  import Ledger.AccountsFixtures
+  import Ledger.UsersFixtures
   import Ledger.BookFixtures
 
   import Ecto.Query

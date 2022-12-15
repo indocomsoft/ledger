@@ -20,8 +20,8 @@ defmodule Ledger.Application do
         # Start a worker by calling: Ledger.Worker.start_link(arg)
         # {Ledger.Worker, arg}
       ] ++
-        if Application.get_env(:ledger, Ledger.Accounts.UserTokenCleaner)[:start],
-          do: [Ledger.Accounts.UserTokenCleaner],
+        if Application.get_env(:ledger, Ledger.Users.UserTokenCleaner)[:start],
+          do: [Ledger.Users.UserTokenCleaner],
           else: []
 
     # See https://hexdocs.pm/elixir/Supervisor.html

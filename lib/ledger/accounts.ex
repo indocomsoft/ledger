@@ -1,13 +1,13 @@
-defmodule Ledger.Accounts do
+defmodule Ledger.Users do
   @moduledoc """
-  The Accounts context.
+  The Users context.
   """
 
   import Ecto.Query, warn: false
 
   alias Ledger.Repo
-  alias Ledger.Accounts.User
-  alias Ledger.Accounts.UserToken
+  alias Ledger.Users.User
+  alias Ledger.Users.UserToken
 
   @max_session_token_generation_num_attempts 3
 

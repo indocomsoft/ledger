@@ -40,7 +40,7 @@ config :phoenix, :json_library, Jason
 config :ex_cldr, default_backend: Ledger.Cldr
 
 # 1 hour
-config :ledger, Ledger.Accounts.UserTokenCleaner, interval_ms: 60 * 60 * 1000
+config :ledger, Ledger.Users.UserTokenCleaner, interval_ms: 60 * 60 * 1000
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

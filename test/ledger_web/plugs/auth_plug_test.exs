@@ -1,6 +1,6 @@
 defmodule LedgerWeb.AuthPlugTest do
   use LedgerWeb.ConnCase, async: true
-  import Ledger.AccountsFixtures
+  import Ledger.UsersFixtures
 
   setup %{conn: conn} do
     %{user: user_fixture(), path: Routes.account_path(conn, :index)}
@@ -20,7 +20,7 @@ defmodule LedgerWeb.AuthPlugTest do
   end
 
   test "valid authorization HTTP header", %{conn: conn, user: user, path: path} do
-    token = user |> Ledger.Accounts.generate_user_session_token() |> LedgerWeb.Auth.sign()
+    token = user |> Ledger.Users.generate_user_session_token() |> LedgerWeb.Auth.sign()
 
     assert conn
            |> put_req_header("authorization", "Bearer #{token}")

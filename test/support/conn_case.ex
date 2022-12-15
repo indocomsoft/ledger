@@ -31,10 +31,10 @@ defmodule LedgerWeb.ConnCase do
       # The default endpoint for testing
       @endpoint LedgerWeb.Endpoint
 
-      defp login(conn, user = %Ledger.Accounts.User{}) do
+      defp login(conn, user = %Ledger.Users.User{}) do
         token =
           user
-          |> Ledger.Accounts.generate_user_session_token()
+          |> Ledger.Users.generate_user_session_token()
           |> LedgerWeb.Auth.sign()
 
         put_req_header(conn, "authorization", "Bearer #{token}")

@@ -1,12 +1,12 @@
-defmodule Ledger.Accounts.UserToken do
+defmodule Ledger.Users.UserToken do
   @moduledoc """
   Represents a session token that belongs to a user.
   """
 
   use Ecto.Schema
   import Ecto.Query
-  alias Ledger.Accounts.User
-  alias Ledger.Accounts.UserToken
+  alias Ledger.Users.User
+  alias Ledger.Users.UserToken
 
   @rand_size 32
 
@@ -62,7 +62,7 @@ defmodule Ledger.Accounts.UserToken do
 
   @spec expired_session_token_query :: Ecto.Query.t()
   def expired_session_token_query do
-    Ledger.Accounts.UserToken
+    Ledger.Users.UserToken
     |> where([t], t.inserted_at <= ago(@session_validity_in_days, "day"))
   end
 

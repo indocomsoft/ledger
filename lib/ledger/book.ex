@@ -7,7 +7,7 @@ defmodule Ledger.Book do
   import Ecto.Changeset
   alias Ledger.Repo
 
-  alias Ledger.Accounts.User
+  alias Ledger.Users.User
   alias Ledger.Book.Account
 
   @doc """

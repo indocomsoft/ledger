@@ -4,7 +4,7 @@ defmodule Ledger.BookFixtures do
   entities via the `Ledger.Book` context.
   """
 
-  @spec account_fixtures(Ledger.Accounts.User.t()) :: map()
+  @spec account_fixtures(Ledger.Users.User.t()) :: map()
   def account_fixtures(user) do
     original_user_id = Ledger.Repo.put_user_id(user.id)
     root = Ledger.Book.create_or_get_root_account_for_user!(user)

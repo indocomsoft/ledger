@@ -1,4 +1,4 @@
-defmodule Ledger.Accounts.User do
+defmodule Ledger.Users.User do
   @moduledoc """
   Represents a user that can use ledger.
   """
@@ -6,7 +6,7 @@ defmodule Ledger.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Ledger.Accounts.User
+  alias Ledger.Users.User
 
   @type t :: %__MODULE__{
           username: String.t() | nil,

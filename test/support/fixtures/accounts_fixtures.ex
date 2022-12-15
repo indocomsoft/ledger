@@ -1,7 +1,7 @@
-defmodule Ledger.AccountsFixtures do
+defmodule Ledger.UsersFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `Ledger.Accounts` context.
+  entities via the `Ledger.Users` context.
   """
 
   def unique_username, do: "user#{System.unique_integer([:positive])}"
@@ -18,7 +18,7 @@ defmodule Ledger.AccountsFixtures do
     {:ok, user} =
       attrs
       |> valid_user_attributes()
-      |> Ledger.Accounts.register_user()
+      |> Ledger.Users.register_user()
 
     user
   end

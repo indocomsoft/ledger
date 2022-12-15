@@ -5,7 +5,7 @@ defmodule Ledger.BookTest do
 
   alias Ledger.Book.Account
 
-  import Ledger.AccountsFixtures
+  import Ledger.UsersFixtures
   import Ecto.Query
 
   setup do

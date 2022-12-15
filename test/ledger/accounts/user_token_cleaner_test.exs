@@ -1,20 +1,20 @@
-defmodule Ledger.Accounts.UserTokenCleanerTest do
+defmodule Ledger.Users.UserTokenCleanerTest do
   use Ledger.DataCase, async: true
 
-  import Ledger.AccountsFixtures
+  import Ledger.UsersFixtures
   import Ecto.Query
 
-  alias Ledger.Accounts.UserToken
+  alias Ledger.Users.UserToken
 
   describe "cleanup" do
     setup do
       %{user: user_fixture()}
     end
 
-    @spec generate_user_token(Ledger.Accounts.User.t(), NaiveDateTime.t()) ::
-            Ledger.Accounts.UserToken.t()
+    @spec generate_user_token(Ledger.Users.User.t(), NaiveDateTime.t()) ::
+            Ledger.Users.UserToken.t()
     def generate_user_token(user, inserted_at) do
-      {_, user_token} = Ledger.Accounts.UserToken.build_session_token(user)
+      {_, user_token} = Ledger.Users.UserToken.build_session_token(user)
 
       user_token
       |> Ecto.Changeset.change(%{inserted_at: inserted_at})
@@ -41,15 +41,15 @@ defmodule Ledger.Accounts.UserTokenCleanerTest do
       expected = [expired_user_token_id, valid_user_token_id] |> Enum.sort()
 
       assert ^expected =
-               Ledger.Accounts.UserToken
+               Ledger.Users.UserToken
                |> select([t], t.id)
                |> order_by(:id)
                |> Repo.all(skip_user_id: true)
 
-      Ledger.Accounts.UserTokenCleaner.handle_info(:cleanup, nil)
+      Ledger.Users.UserTokenCleaner.handle_info(:cleanup, nil)
 
       assert ^valid_user_token_id =
-               Ledger.Accounts.UserToken |> select([t], t.id) |> Repo.one(skip_user_id: true)
+               Ledger.Users.UserToken |> select([t], t.id) |> Repo.one(skip_user_id: true)
 
       assert_receive :cleanup
     end
