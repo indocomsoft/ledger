@@ -44,9 +44,32 @@ defmodule Ledger.Repo.Migrations.CreateAccounts do
            )
 
     execute """
+            CREATE FUNCTION check_accounts_immutable()
+            RETURNS TRIGGER
+            AS $func$
+              BEGIN
+                IF (OLD.account_type, OLD.currency, OLD.user_id) <> (NEW.accounts, NEW.currency, NEW.user_id) THEN
+                  RAISE EXCEPTION 'account_type, currency, user_id are immutable'
+                    USING ERRCODE = 'integrity_constraint_violation';
+                END IF;
+                RETURN NEW;
+              END
+            $func$ LANGUAGE plpgsql
+            """,
+            "DROP FUNCTION check_accounts_immutable()"
+
+    execute """
+            CREATE TRIGGER check_accounts_immutable BEFORE UPDATE OF account_type, currency, user_id
+              ON accounts
+              FOR EACH ROW
+              EXECUTE PROCEDURE check_accounts_immutable()
+            """,
+            "DROP TRIGGER check_accounts_immutable ON accounts"
+
+    execute """
             CREATE FUNCTION
               ensure_tree_account()
-              RETURNS trigger
+              RETURNS TRIGGER
               AS $func$
                 BEGIN
                   IF EXISTS (
