@@ -277,6 +277,15 @@ defmodule LedgerWeb.AccountControllerTest do
                |> json_response(200)
     end
 
+    test "handles not found correctly", %{conn: conn} do
+      assert %{"error" => "not found"} =
+               conn
+               |> put(Routes.account_parent_id_path(conn, :update_parent_id, "unknown"), %{
+                 "parent_id" => ""
+               })
+               |> json_response(404)
+    end
+
     test "ensure parent account exists", %{conn: conn, accounts: %{tax: tax}} do
       tax_external_id = encode_external_id(tax.external_id)
 
