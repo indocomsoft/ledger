@@ -11,9 +11,18 @@ defmodule Ledger.Book.Split do
   alias Ledger.Book.Transaction
   alias Ledger.Users.User
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          external_id: String.t(),
+          account_currency_amount: integer(),
+          transaction_currency_amount: integer(),
+          reconcile_date: Date.t(),
+          user_id: integer(),
+          transaction_id: integer(),
+          account_id: integer()
+        }
 
   schema "splits" do
+    field :external_id, :binary, read_after_writes: true
     field :account_currency_amount, :integer
     field :transaction_currency_amount, :integer
     field :reconcile_date, :date
@@ -21,11 +30,17 @@ defmodule Ledger.Book.Split do
     belongs_to :user, User
     belongs_to :transaction, Transaction
     belongs_to :account, Account
+
+    timestamps()
   end
 
   @spec to_map(Split.t()) :: map()
   def to_map(split = %Split{}) do
-    split |> Map.from_struct() |> Map.take(Split.__schema__(:fields)) |> Map.drop([:id])
+    split
+    |> Map.from_struct()
+    |> Map.take(Split.__schema__(:fields))
+    |> Map.drop([:id, :external_id])
+    |> Map.reject(fn {_k, v} -> v == nil end)
   end
 
   @spec create_changeset(map(), User.t(), Transaction.t(), Account.t()) :: Ecto.Changeset.t()

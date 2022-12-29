@@ -8,7 +8,21 @@ defmodule Ledger.Repo.Migrations.CreateTransactionSplit do
       add :currency, :string, null: false
       add :post_date, :date, null: false
       add :description, :string, null: false
+
+      timestamps()
     end
+
+    execute "CREATE EXTENSION IF NOT EXISTS pgcrypto", ""
+
+    # Add 'transactions_' as prefix to prevent external_id collision with accounts
+    execute """
+            ALTER TABLE transactions
+              ADD COLUMN external_id bytea
+                GENERATED ALWAYS AS
+                  (digest('transactions_' || id::varchar(255) || '_' || user_id::varchar(255), 'sha256'))
+                STORED
+            """,
+            "ALTER TABLE transactions DROP COLUMN external_id"
 
     execute """
             CREATE FUNCTION check_transactions_immutable()
@@ -43,7 +57,19 @@ defmodule Ledger.Repo.Migrations.CreateTransactionSplit do
       add :account_currency_amount, :bigint, null: false
       add :transaction_currency_amount, :bigint, null: false
       add :reconcile_date, :date
+
+      timestamps()
     end
+
+    # Add 'splits_' as prefix to prevent external_id collision with accounts
+    execute """
+            ALTER TABLE splits
+              ADD COLUMN external_id bytea
+                GENERATED ALWAYS AS
+                  (digest('splits_' || id::varchar(255) || '_' || user_id::varchar(255), 'sha256'))
+                STORED
+            """,
+            "ALTER TABLE splits DROP COLUMN external_id"
 
     execute """
             CREATE FUNCTION

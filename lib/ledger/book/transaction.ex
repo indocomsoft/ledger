@@ -12,6 +12,7 @@ defmodule Ledger.Book.Transaction do
   alias Ledger.Users.User
 
   @type t :: %__MODULE__{
+          external_id: String.t(),
           currency: atom(),
           post_date: Date.t(),
           description: String.t(),
@@ -19,11 +20,14 @@ defmodule Ledger.Book.Transaction do
         }
 
   schema "transactions" do
+    field :external_id, :binary, read_after_writes: true
     field :currency, Ecto.Enum, values: Cldr.known_currencies()
     field :post_date, :date
     field :description, :string
 
     belongs_to :user, User
+
+    timestamps()
   end
 
   @spec create_changeset(map(), User.t()) :: Ecto.Changeset.t()

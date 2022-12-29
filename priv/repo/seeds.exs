@@ -94,3 +94,14 @@ root_account = Ledger.Book.create_or_get_root_account_for_user!(user)
     "name" => "Bank Account",
     "placeholder" => false
   })
+
+{:ok, %{transaction: transaction, splits: splits}} =
+  Ledger.Book.create_transaction_and_splits(
+    user,
+    %{"currency" => "SGD", "post_date" => "2022-12-10", "description" => "Monthly salary"},
+    [
+      {%{"account_currency_amount" => 500, "transaction_currency_amount" => 500}, bank_account},
+      {%{"account_currency_amount" => -500, "transaction_currency_amount" => -500}, salary}
+    ]
+  )
+  |> IO.inspect()

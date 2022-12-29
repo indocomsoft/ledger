@@ -144,16 +144,34 @@ defmodule Ledger.Book do
           changeset = Split.create_changeset(split_attrs, user, transaction, account)
 
           case apply_action(changeset, :create_split) do
-            {:ok, split} -> {:cont, [Split.to_map(split) | acc]}
-            {:error, changeset} -> {:halt, changeset}
+            {:ok, split} ->
+              split =
+                split
+                |> Split.to_map()
+                |> Map.put(:transaction_id, {:placeholder, :transaction_id})
+                |> Map.put(:user_id, {:placeholder, :user_id})
+                |> Map.put(:inserted_at, {:placeholder, :now})
+                |> Map.put(:updated_at, {:placeholder, :now})
+
+              {:cont, [split | acc]}
+
+            {:error, changeset} ->
+              {:halt, changeset}
           end
         end)
 
+      placeholders = %{
+        transaction_id: transaction.id,
+        user_id: transaction.user_id,
+        now: transaction.inserted_at
+      }
+
       with splits when is_list(splits) <- splits_or_changeset,
            {:sum, 0} <-
-             {:sum, splits |> Enum.map(& &1.transaction_currency_amount) |> Enum.sum()},
+             {:sum, splits |> Enum.map(& &1[:transaction_currency_amount]) |> Enum.sum()},
            num_splits <- length(splits),
-           {^num_splits, splits} <- Repo.insert_all(Split, splits, returning: true) do
+           {^num_splits, splits} <-
+             Repo.insert_all(Split, splits, returning: true, placeholders: placeholders) do
         {:ok, splits}
       else
         %Ecto.Changeset{} = changeset -> {:error, changeset}
