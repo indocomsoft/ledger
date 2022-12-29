@@ -7,8 +7,10 @@ defmodule Ledger.Book do
   import Ecto.Changeset
   alias Ledger.Repo
 
-  alias Ledger.Users.User
   alias Ledger.Book.Account
+  alias Ledger.Book.Split
+  alias Ledger.Book.Transaction
+  alias Ledger.Users.User
 
   @doc """
   Creates or get the root account for the given user.
@@ -127,5 +129,37 @@ defmodule Ledger.Book do
             {:error, changeset}
         end
     end
+  end
+
+  @spec create_transaction_and_splits(User.t(), map(), [{map(), Account.t()}]) ::
+          {:ok, %{transaction: Transaction.t(), splits: [Split.t()]}}
+          | {:error, :transaction | :splits, :placeholder | :splits_sum | Ecto.Changeset.t(),
+             map()}
+  def create_transaction_and_splits(user = %User{}, transaction_attrs, splits_attrs) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:transaction, Transaction.create_changeset(transaction_attrs, user))
+    |> Ecto.Multi.run(:splits, fn _repo, %{transaction: transaction} ->
+      splits_or_changeset =
+        Enum.reduce_while(splits_attrs, [], fn {split_attrs, account}, acc ->
+          changeset = Split.create_changeset(split_attrs, user, transaction, account)
+
+          case apply_action(changeset, :create_split) do
+            {:ok, split} -> {:cont, [Split.to_map(split) | acc]}
+            {:error, changeset} -> {:halt, changeset}
+          end
+        end)
+
+      with splits when is_list(splits) <- splits_or_changeset,
+           {:sum, 0} <-
+             {:sum, splits |> Enum.map(& &1.transaction_currency_amount) |> Enum.sum()},
+           num_splits <- length(splits),
+           {^num_splits, splits} <- Repo.insert_all(Split, splits, returning: true) do
+        {:ok, splits}
+      else
+        %Ecto.Changeset{} = changeset -> {:error, changeset}
+        {:sum, _} -> {:error, :splits_sum}
+      end
+    end)
+    |> Repo.transaction()
   end
 end

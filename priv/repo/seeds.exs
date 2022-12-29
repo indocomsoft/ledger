@@ -56,7 +56,7 @@ root_account = Ledger.Book.create_or_get_root_account_for_user!(user)
   })
 
 {:ok, us_federal_tax} =
-  Ledger.Book.create_child_account(root_account, %{
+  Ledger.Book.create_child_account(tax, %{
     "account_type" => "expense",
     "currency" => "USD",
     "name" => "US Federal Tax",
@@ -64,7 +64,7 @@ root_account = Ledger.Book.create_or_get_root_account_for_user!(user)
   })
 
 {:ok, us_state_tax} =
-  Ledger.Book.create_child_account(root_account, %{
+  Ledger.Book.create_child_account(tax, %{
     "account_type" => "expense",
     "currency" => "USD",
     "name" => "US State Tax",
@@ -72,9 +72,25 @@ root_account = Ledger.Book.create_or_get_root_account_for_user!(user)
   })
 
 {:ok, sg_tax} =
-  Ledger.Book.create_child_account(root_account, %{
+  Ledger.Book.create_child_account(tax, %{
     "account_type" => "expense",
     "currency" => "SGD",
     "name" => "SG Tax",
+    "placeholder" => false
+  })
+
+{:ok, asset} =
+  Ledger.Book.create_child_account(root_account, %{
+    "account_type" => "asset",
+    "currency" => "SGD",
+    "name" => "Asset",
+    "placeholder" => true
+  })
+
+{:ok, bank_account} =
+  Ledger.Book.create_child_account(asset, %{
+    "account_type" => "asset",
+    "currency" => "SGD",
+    "name" => "Bank Account",
     "placeholder" => false
   })
