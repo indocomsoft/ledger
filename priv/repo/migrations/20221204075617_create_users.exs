@@ -57,9 +57,12 @@ defmodule Ledger.Repo.Migrations.CreateUsers do
               RETURNS TRIGGER
               AS $func$
                 BEGIN
-                  RAISE EXCEPTION
-                    'users_tokens rows are immutable'
-                    USING ERRCODE = 'integrity_constraint_violation';
+                  IF (OLD.user_id, OLD.token, OLD.context) <> (NEW.user_id, NEW.token, NEW.context) THEN
+                    RAISE EXCEPTION
+                      'users_tokens rows are immutable'
+                      USING ERRCODE = 'integrity_constraint_violation';
+                  END IF;
+                  RETURN NEW;
                 END
               $func$ LANGUAGE plpgsql
             """,
